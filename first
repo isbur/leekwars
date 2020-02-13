@@ -1,0 +1,69 @@
+include("perfect_pistol");
+//--------------------------------
+//---------- Base code -----------
+//--------------------------------
+var my_weapon = WEAPON_PISTOL;
+// We take the pistol
+if (!getWeapon()){
+	setWeapon(my_weapon); // Warning: costs 1 TP
+}
+
+
+// We get the nearest enemy
+var enemy = getNearestEnemy();
+debug(enemy);
+
+
+// We move towards him
+var my_cell = getCell();
+var enemy_cell = getCell(enemy);
+var effective_distance_to_target = getPathLength(my_cell, enemy_cell);
+debug(effective_distance_to_target);
+
+
+// 0-range -> FIRE!
+// case of equal total MPs
+// We need to displace in such way that next turn enemy isn't' able to fire at us, but we can step forward a little and fire immediately
+// get into range, fire, get out of range?
+
+// Faraway state
+if (effective_distance_to_target > getWeaponMaxRange(my_weapon) + 2 * max( getTotalMP(), getTotalMP(enemy) ) ) {
+	moveToward(enemy);
+	debug("FARAWAY STATE");
+}
+// First encounter
+if (
+	effective_distance_to_target < getWeaponMaxRange(my_weapon) + 2 * max( getTotalMP(), getTotalMP(enemy) ) && 
+	effective_distance_to_target > getWeaponMaxRange(my_weapon) + getTotalMP(enemy_cell) / 2
+ 	) 
+{
+	moveToward(enemy, effective_distance_to_target - (getWeaponMaxRange(my_weapon) + getTotalMP(enemy_cell)));
+	debug("FIRST ENCOUNTER");
+}
+// Hit and run
+if (effective_distance_to_target < getWeaponMaxRange(my_weapon) + getTotalMP() / 2) {
+	if (effective_distance_to_target > getWeaponMaxRange(my_weapon)){
+		moveToward(enemy, effective_distance_to_target - getWeaponMaxRange(my_weapon));
+	}
+	debug("HIT&RUN");
+}
+
+
+// We try to shoot him!
+if (effective_distance_to_target < getWeaponMaxRange(my_weapon)) {
+	while (
+		getTP() >= getWeaponCost(my_weapon) && 
+		isAlive(enemy) &&
+		canUseWeapon(enemy)
+	) {
+
+		debug(getTP());
+		useWeapon(enemy);
+	}
+}
+
+if (effective_distance_to_target < getWeaponMaxRange(my_weapon)) {
+	moveAwayFrom(enemy);
+}
+
+debug(getRegisters());
