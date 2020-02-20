@@ -1,0 +1,72 @@
+include("map_analyzer_miscellaneous");
+
+
+function lookAround(path_distance){
+
+	if (path_distance <= 0) {
+		debugE("WTF? path_distance <= 0!");
+	}
+	debug("Starting to look around");
+	
+	var current_cell = getCell();
+	var support_cell = getCell();
+	
+	checkNextCellStartingFrom(current_cell, support_cell, path_distance);
+	debugSight(getCell(), 3);
+}
+
+
+function checkNextCellStartingFrom(current_cell, support_cell, path_distance) {
+	
+	//viewMap();
+	var currentX = getCellX(current_cell);
+	var currentY = getCellY(current_cell);
+	
+	
+	if(Map['look'][string(currentY)][string(currentX)] == "P"){
+		return;
+	}
+	
+	/*
+	debug("Current cell:");
+	debug("x: " + currentX);
+	debug("y: " + currentY);
+	debug("Map['look'][x][y]:" + Map['look'][string(currentY)][string(currentX)]);
+	*/
+	
+	////
+	Map['look'][string(currentY)][string(currentX)] = "P";
+	//debugSight(getCell(), 3);
+	//debug(Map);
+	
+	// crest pass
+	var Directions = [
+		"N":[0, 1],
+		"E":[1, 0],
+		"S":[0, -1],
+		"W":[-1, 0]
+	];
+	
+	for (var key:var direction in Directions) {
+		var supportX = getCellX(support_cell);
+		var supportY = getCellY(support_cell);
+		var nextX = currentX + direction[0];
+		var nextY = currentY + direction[1];
+		var next_cell = getCellFromXY(nextX, nextY);
+		/*
+		debug(key);
+		debug(nextX+" "+nextY);
+		debug(Map['look'][string(nextY)][string(nextY)]);
+		*/
+		if (
+			Map['look'][string(nextY)][string(nextY)] != "P" &&
+			getManhattanDistance(
+				[supportX, supportY],
+				[nextX, nextY]
+			) < path_distance
+		) {
+			checkNextCellStartingFrom(next_cell,  support_cell,  path_distance);
+		}
+		
+	}
+}
